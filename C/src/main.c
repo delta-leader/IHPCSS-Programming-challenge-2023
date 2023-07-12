@@ -72,7 +72,7 @@ void calculate_pagerank(double pagerank[])
 	    outdegree[i] = 0;
 	    for(int j = 0; j < GRAPH_ORDER; j++)
         {
-	        if (adjacency_matrix[i][j])
+	        if (adjacency_matrix[j][i])
             {
 		        outdegree[i]++;
 	        }
@@ -92,7 +92,7 @@ void calculate_pagerank(double pagerank[])
 	    
 	        for(int j = 0; j < GRAPH_ORDER; j++)
             {
-		        if (adjacency_matrix[j][i])
+		        if (adjacency_matrix[i][j])
                 {
 		            new_pagerank[i] += pagerank[j] * outdegree[j];
 		        }
@@ -143,8 +143,8 @@ void generate_nice_graph(void)
     {
         for(int j = 0; j < GRAPH_ORDER; j++)
         {
-            int source = i;
-            int destination = j;
+            int source = j;
+            int destination = i;
             if(i != j)
             {
                 adjacency_matrix[source][destination] = 1;
@@ -166,8 +166,8 @@ void generate_sneaky_graph(void)
     {
         for(int j = 0; j < GRAPH_ORDER - i; j++)
         {
-            int source = i;
-            int destination = j;
+            int source = j;
+            int destination = i;
             if(i != j)
             {
                 adjacency_matrix[source][destination] = 1;
