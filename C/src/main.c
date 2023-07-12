@@ -80,6 +80,7 @@ void calculate_pagerank(double pagerank[])
 			outdegree_matrix[j][i]++;
 		    }
 		}
+		outdegree_matrix[j][i] = 1/outdegree_matrix[j][i];
 	    }
 	}
     }
@@ -100,7 +101,7 @@ void calculate_pagerank(double pagerank[])
             {
 				if (adjacency_matrix[j][i] == 1.0)
                 {
-					new_pagerank[i] += pagerank[j] / outdegree_matrix[j][i];
+					new_pagerank[i] += pagerank[j] * outdegree_matrix[j][i];
 				}
 			}
 		}
