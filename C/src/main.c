@@ -84,6 +84,7 @@ void calculate_pagerank(double pagerank[])
     {
         double iteration_start = omp_get_wtime();
  
+        diff = 0.0;
 	for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = 0.0;
@@ -95,18 +96,12 @@ void calculate_pagerank(double pagerank[])
 		    new_pagerank[i] += pagerank[j] * outdegree[j];
 		}
 	    }
+            
+	    new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+            
+	    diff += fabs(new_pagerank[i] - pagerank[i]);
 	}
  
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-        }
- 
-        diff = 0.0;
-        for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-            diff += fabs(new_pagerank[i] - pagerank[i]);
-        }
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
