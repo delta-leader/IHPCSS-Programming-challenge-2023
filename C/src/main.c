@@ -84,21 +84,18 @@ void calculate_pagerank(double pagerank[])
     {
         double iteration_start = omp_get_wtime();
  
-        for(int i = 0; i < GRAPH_ORDER; i++)
+	for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = 0.0;
-        }
- 
-		for(int i = 0; i < GRAPH_ORDER; i++)
-        {
-			for(int j = 0; j < GRAPH_ORDER; j++)
+	    
+	    for(int j = 0; j < GRAPH_ORDER; j++)
             {
-				if (adjacency_matrix[j][i])
+		if (adjacency_matrix[j][i])
                 {
-					new_pagerank[i] += pagerank[j] * outdegree[j];
-				}
-			}
+		    new_pagerank[i] += pagerank[j] * outdegree[j];
 		}
+	    }
+	}
  
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
