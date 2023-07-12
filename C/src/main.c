@@ -24,7 +24,7 @@
  * will be 1.0. The absence of edge is represented with value 0.0.
  * Redundant edges are still represented with value 1.0.
  */
-double adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
+int adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double outdegree_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
@@ -37,7 +37,7 @@ void initialize_graph(void)
     {
         for(int j = 0; j < GRAPH_ORDER; j++)
         {
-            adjacency_matrix[i][j] = 0.0;
+            adjacency_matrix[i][j] = 0;
         }
     }
 }
@@ -72,7 +72,7 @@ void calculate_pagerank(double pagerank[])
 	outdegree[i] = 0;
 	for(int j = 0; j < GRAPH_ORDER; j++)
         {
-	    if (adjacency_matrix[i][j] == 1.0)
+	    if (adjacency_matrix[i][j])
             {
 		outdegree[i]++;
 	    }
@@ -94,7 +94,7 @@ void calculate_pagerank(double pagerank[])
         {
 			for(int j = 0; j < GRAPH_ORDER; j++)
             {
-				if (adjacency_matrix[j][i] == 1.0)
+				if (adjacency_matrix[j][i])
                 {
 					new_pagerank[i] += pagerank[j] * outdegree[j];
 				}
@@ -155,7 +155,7 @@ void generate_nice_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = 1;
             }
         }
     }
@@ -178,7 +178,7 @@ void generate_sneaky_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = 1;
             }
         }
     }
