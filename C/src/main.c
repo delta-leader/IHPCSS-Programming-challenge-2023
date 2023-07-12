@@ -26,6 +26,7 @@
  */
 double adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double outdegree_matrix[GRAPH_ORDER][GRAPH_ORDER];
+double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
 double total_diff = 0.0;
@@ -68,21 +69,15 @@ void calculate_pagerank(double pagerank[])
     }
     for(int i = 0; i < GRAPH_ORDER; i++)
     {
+	outdegree[i] = 0;
 	for(int j = 0; j < GRAPH_ORDER; j++)
         {
-	    if (adjacency_matrix[j][i] == 1.0)
+	    if (adjacency_matrix[i][j] == 1.0)
             {
-		outdegree_matrix[j][i] = 0;
-		for(int k = 0; k < GRAPH_ORDER; k++)
-                {
-		    if (adjacency_matrix[j][k] == 1.0)
-                    {
-			outdegree_matrix[j][i]++;
-		    }
-		}
-		outdegree_matrix[j][i] = 1/outdegree_matrix[j][i];
+		outdegree[i]++;
 	    }
 	}
+	outdegree[i] = 1/outdegree[i];
     }
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
@@ -101,7 +96,7 @@ void calculate_pagerank(double pagerank[])
             {
 				if (adjacency_matrix[j][i] == 1.0)
                 {
-					new_pagerank[i] += pagerank[j] * outdegree_matrix[j][i];
+					new_pagerank[i] += pagerank[j] * outdegree[j];
 				}
 			}
 		}
