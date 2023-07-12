@@ -24,7 +24,9 @@
  * will be 1.0. The absence of edge is represented with value 0.0.
  * Redundant edges are still represented with value 1.0.
  */
-double adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
+int adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
+double outdegree_matrix[GRAPH_ORDER][GRAPH_ORDER];
+double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
 double total_diff = 0.0;
@@ -35,7 +37,7 @@ void initialize_graph(void)
     {
         for(int j = 0; j < GRAPH_ORDER; j++)
         {
-            adjacency_matrix[i][j] = 0.0;
+            adjacency_matrix[i][j] = 0;
         }
     }
 }
@@ -65,6 +67,18 @@ void calculate_pagerank(double pagerank[])
     {
         new_pagerank[i] = 0.0;
     }
+    for(int i = 0; i < GRAPH_ORDER; i++)
+    {
+	outdegree[i] = 0;
+	for(int j = 0; j < GRAPH_ORDER; j++)
+        {
+	    if (adjacency_matrix[i][j])
+            {
+		outdegree[i]++;
+	    }
+	}
+	outdegree[i] = 1/outdegree[i];
+    }
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
@@ -80,18 +94,9 @@ void calculate_pagerank(double pagerank[])
         {
 			for(int j = 0; j < GRAPH_ORDER; j++)
             {
-				if (adjacency_matrix[j][i] == 1.0)
+				if (adjacency_matrix[j][i])
                 {
-					int outdegree = 0;
-				 
-					for(int k = 0; k < GRAPH_ORDER; k++)
-                    {
-						if (adjacency_matrix[j][k] == 1.0)
-                        {
-							outdegree++;
-						}
-					}
-					new_pagerank[i] += pagerank[j] / (double)outdegree;
+					new_pagerank[i] += pagerank[j] * outdegree[j];
 				}
 			}
 		}
@@ -150,7 +155,7 @@ void generate_nice_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = 1;
             }
         }
     }
@@ -173,7 +178,7 @@ void generate_sneaky_graph(void)
             int destination = j;
             if(i != j)
             {
-                adjacency_matrix[source][destination] = 1.0;
+                adjacency_matrix[source][destination] = 1;
             }
         }
     }
