@@ -108,9 +108,12 @@ void calculate_pagerank(double pagerank[])
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         double pagerank_total = 0.0;
+	double* temp;
+	temp = pagerank;
+	pagerank = new_pagerank;
+	new_pagerank = temp;
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
-            pagerank[i] = new_pagerank[i];
             pagerank_total += pagerank[i];
         }
             
