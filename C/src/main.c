@@ -25,7 +25,6 @@
  * Redundant edges are still represented with value 1.0.
  */
 int adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
-double outdegree_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
