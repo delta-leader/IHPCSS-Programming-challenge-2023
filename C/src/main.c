@@ -10,6 +10,7 @@
 #include <math.h>
 #include <omp.h>
 #include <mpi.h>
+#include <stdint.h>
 
 /// The number of vertices in the graph.
 #define GRAPH_ORDER 1000
@@ -24,7 +25,7 @@
  * will be 1.0. The absence of edge is represented with value 0.0.
  * Redundant edges are still represented with value 1.0.
  */
-int adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
+int8_t adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
 double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
