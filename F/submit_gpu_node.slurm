@@ -52,10 +52,10 @@ export OMP_PLACES=cores;
 export OMP_PROC_BIND=true;
 
 # Load the modules needed
-module load nvhpc/22.9 openmpi/4.0.5-nvhpc22.9
+module load cuda/11.7.1 nvhpc/22.9 openmpi/4.0.5-nvhpc22.9
 
 # Compile everything
 make
 
 # Execute the program
-mpirun --bind-to none mpirun -n $MPI_PROCESS_COUNT --report-bindings ./bin/main
+mpirun --bind-to none -n $MPI_PROCESS_COUNT --report-bindings ./bin/main
