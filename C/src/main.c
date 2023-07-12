@@ -69,15 +69,15 @@ void calculate_pagerank(double pagerank[])
     }
     for(int i = 0; i < GRAPH_ORDER; i++)
     {
-	outdegree[i] = 0;
-	for(int j = 0; j < GRAPH_ORDER; j++)
+	    outdegree[i] = 0;
+	    for(int j = 0; j < GRAPH_ORDER; j++)
         {
-	    if (adjacency_matrix[i][j])
+	        if (adjacency_matrix[i][j])
             {
-		outdegree[i]++;
+		        outdegree[i]++;
+	        }
 	    }
-	}
-	outdegree[i] = 1/outdegree[i];
+	    outdegree[i] = 1/outdegree[i];
     }
 
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
@@ -86,22 +86,22 @@ void calculate_pagerank(double pagerank[])
         double iteration_start = omp_get_wtime();
  
         diff = 0.0;
-	for(int i = 0; i < GRAPH_ORDER; i++)
+        for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = 0.0;
 	    
-	    for(int j = 0; j < GRAPH_ORDER; j++)
+	        for(int j = 0; j < GRAPH_ORDER; j++)
             {
-		if (adjacency_matrix[j][i])
+		        if (adjacency_matrix[j][i])
                 {
-		    new_pagerank[i] += pagerank[j] * outdegree[j];
-		}
+		            new_pagerank[i] += pagerank[j] * outdegree[j];
+		        }
+	        }
+            
+	        new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+            
+	        diff += fabs(new_pagerank[i] - pagerank[i]);
 	    }
-            
-	    new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-            
-	    diff += fabs(new_pagerank[i] - pagerank[i]);
-	}
  
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
@@ -122,10 +122,10 @@ void calculate_pagerank(double pagerank[])
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
         }
  
-	double iteration_end = omp_get_wtime();
-	elapsed = omp_get_wtime() - start;
-	iteration++;
-	time_per_iteration = elapsed / iteration;
+	    double iteration_end = omp_get_wtime();
+	    elapsed = omp_get_wtime() - start;
+	    iteration++;
+	    time_per_iteration = elapsed / iteration;
     }
     
     printf("%zu iterations achieved in %.2f seconds\n", iteration, elapsed);
