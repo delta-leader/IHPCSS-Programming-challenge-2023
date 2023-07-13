@@ -11,6 +11,7 @@
 #include <omp.h>
 #include <mpi.h>
 #include <stdint.h>
+#include <string.h>
 
 /// The number of vertices in the graph.
 #define GRAPH_ORDER 1000
@@ -107,28 +108,53 @@ void calculate_pagerank(double pagerank[])
 
         // I pulled this loop out again because it prevents the nested loop from collapsing
         // should run pretty efficient anyway
-        #pragma omp target teams distribute parallel for
+        //#pragma omp target teams distribute parallel for
+        /*
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = 0.0;
         }
+        */
+        memcpy(new_pagerank, (double const[1000]){ 0 }, 1000 * sizeof(double));
         elapsed_t[0] = omp_get_wtime() - start_t[0];
         start_t[1] = omp_get_wtime();
  
-        #pragma omp target teams distribute
-        for(int i = 0; i < GRAPH_ORDER; i++)
+        //#pragma omp target data map(from:new_pagerank[:1000])
+        #pragma omp single
         {
-            double sum = 0.0;
-            int t = crs_cnt[i];
-            int cnt = 0;
-            #pragma omp parallel for simd reduction(+:sum)
-	        for(int j = 0; j < t; j++)
+            #pragma omp target teams distribute nowait
+            for(int i = 0; i < 1000; i++)
             {
-                int idx = crs[i][j];
-                sum += pagerank[idx] * outdegree[idx];
-	        }
-            new_pagerank[i] = sum;
-	    }
+                double sum = 0.0;
+                int t = crs_cnt[i];
+                int cnt = 0;
+                #pragma omp parallel for simd reduction(+:sum)
+                for(int j = 0; j < t; j++)
+                {
+                    int idx = crs[i][j];
+                    sum += pagerank[idx] * outdegree[idx];
+                }
+                new_pagerank[i] = sum;
+            }
+
+            /*
+            #pragma omp target teams distribute device(1) nowait
+            for(int i = 500; i < 1000; i++)
+            {
+                double sum = 0.0;
+                int t = crs_cnt[i];
+                int cnt = 0;
+                #pragma omp parallel for simd reduction(+:sum)
+                for(int j = 0; j < t; j++)
+                {
+                    int idx = crs[i][j];
+                    sum += pagerank[idx] * outdegree[idx];
+                }
+                new_pagerank[i] = sum;
+            }
+            */
+        }
+
         elapsed_t[1] = omp_get_wtime() - start_t[1];
         start_t[2] = omp_get_wtime();
 
@@ -136,13 +162,13 @@ void calculate_pagerank(double pagerank[])
         // we need a reduction on diff
         // and diff is needed on host memory
         diff = 0.0;
-        #pragma omp target teams distribute parallel for reduction(+:diff) map(tofrom:diff)
+        //#pragma omp target teams distribute parallel for reduction(+:diff) map(tofrom:diff)
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
 	        diff += fabs(new_pagerank[i] - pagerank[i]);
         }
- 
+        
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
@@ -152,10 +178,11 @@ void calculate_pagerank(double pagerank[])
  
         double pagerank_total = 0.0;
         // we need a reduction on pagerank_total
-        #pragma omp target teams distribute parallel for reduction(+:pagerank_total) map(tofrom:pagerank_total)
+        memcpy(new_pagerank, pagerank, 1000 * sizeof(double));
+        //#pragma omp target teams distribute parallel for reduction(+:pagerank_total) map(tofrom:pagerank_total)
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
-            pagerank[i] = new_pagerank[i];
+            //pagerank[i] = new_pagerank[i];
             pagerank_total += pagerank[i];
         }
         if(fabs(pagerank_total - 1.0) >= 1E-12)
