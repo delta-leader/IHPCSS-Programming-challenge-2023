@@ -79,17 +79,24 @@ void calculate_pagerank(double pagerank[])
 	    }
 	    outdegree[i] = 1/outdegree[i];
     }
-
+    // map the data on the gpu
+    // If running on a single node, we don't need to transfer any of the arrays back to main memory
+    #pragma omp target enter data map(to: pagerank[:GRAPH_ORDER], outdegree[:GRAPH_ORDER]) map(alloc: new_pagerank[:GRAPH_ORDER])
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
         double iteration_start = omp_get_wtime();
- 
-        diff = 0.0;
+
+        // I pulled this loop out again because it prevents the nested loop from collapsing
+        // shoudl run pretty efficient anyway
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             new_pagerank[i] = 0.0;
-	    
+        }
+ 
+        #pragma omp target teams distribute parallel
+        for(int i = 0; i < GRAPH_ORDER; i++)
+        {
 	        for(int j = 0; j < GRAPH_ORDER; j++)
             {
 		        if (adjacency_matrix[i][j])
@@ -97,17 +104,25 @@ void calculate_pagerank(double pagerank[])
 		            new_pagerank[i] += pagerank[j] * outdegree[j];
 		        }
 	        }
-            
-	        new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
-            
-	        diff += fabs(new_pagerank[i] - pagerank[i]);
 	    }
+
+        // pulled this one out again as well
+        // we need a reduction on diff
+        // and diff is needed on host memory
+        diff = 0.0;
+        for(int i = 0; i < GRAPH_ORDER; i++)
+        {
+            new_pagerank[i] = DAMPING_FACTOR * new_pagerank[i] + damping_value;
+	        diff += fabs(new_pagerank[i] - pagerank[i]);
+        }
  
         max_diff = (max_diff < diff) ? diff : max_diff;
         total_diff += diff;
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         double pagerank_total = 0.0;
+        // we need a reduction on pagerank_total
+        #pragma omp target teams distribute parallel for reduction(+:pagerank_total) map(tofrom:pagerank_total)
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             pagerank[i] = new_pagerank[i];
