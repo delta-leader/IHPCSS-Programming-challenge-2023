@@ -123,13 +123,20 @@ void calculate_pagerank(double pagerank[])
         #pragma omp single
         {
             #pragma omp target teams distribute nowait
-            for(int i = 0; i < 1000; i++)
+            for(int i = 0; i < GRAPH_ORDER; i++)
             {
                 double sum = 0.0;
-                int t = crs_cnt[i];
-                int cnt = 0;
+                int t = crs_cnt[i] / 4;
                 #pragma omp parallel for simd reduction(+:sum)
                 for(int j = 0; j < t; j++)
+                {
+                    for(int k = 0; k < 4; k++)
+                    {
+                    int idx = crs[i][k];
+                    sum += pagerank[idx] * outdegree[idx];
+                    }
+                }
+                for(int j = t*4; j < crs_cnt[i]; j++)
                 {
                     int idx = crs[i][j];
                     sum += pagerank[idx] * outdegree[idx];
