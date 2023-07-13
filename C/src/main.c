@@ -120,7 +120,7 @@ void calculate_pagerank(double pagerank[])
         {
             pagerank_total += pagerank[i];
         }
-        if(fabs(pagerank_total - 1.0) >= 1.0)
+        if(fabs(pagerank_total - 1.0) >= 1E-12)
         {
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
         }
