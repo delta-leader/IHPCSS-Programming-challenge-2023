@@ -126,17 +126,16 @@ void calculate_pagerank(double pagerank[])
             for(int i = 0; i < GRAPH_ORDER; i++)
             {
                 double sum = 0.0;
-                int t = crs_cnt[i] / 4;
+                int t = crs_cnt[i] / 3;
                 #pragma omp parallel for simd reduction(+:sum)
                 for(int j = 0; j < t; j++)
                 {
                     int idx = crs[i][j];
                     int idx2 = crs[i][j+1];
                     int idx3 = crs[i][j+2];
-                    int idx4 = crs[i][j+3];
-                    sum += pagerank[idx] * outdegree[idx] + pagerank[idx2] * outdegree[idx2] + pagerank[idx3] * outdegree[idx3] + pagerank[idx4] * outdegree[idx4];
+                    sum += pagerank[idx] * outdegree[idx] + pagerank[idx2] * outdegree[idx2] + pagerank[idx3] * outdegree[idx3];
                 }
-                for(int j = t*4; j < crs_cnt[i]; j++)
+                for(int j = t*3; j < crs_cnt[i]; j++)
                 {
                     int idx = crs[i][j];
                     sum += pagerank[idx] * outdegree[idx];
