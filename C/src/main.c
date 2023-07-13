@@ -27,6 +27,7 @@
  */
 int8_t adjacency_matrix[GRAPH_ORDER][GRAPH_ORDER];
 int crs[GRAPH_ORDER][GRAPH_ORDER];
+int crs_cnt[GRAPH_ORDER];
 double outdegree[GRAPH_ORDER];
 double max_diff = 0.0;
 double min_diff = 1.0;
@@ -73,21 +74,31 @@ void calculate_pagerank(double pagerank[])
     for(int i = 0; i < GRAPH_ORDER; i++)
     {
 	    outdegree[i] = 0;
-        int cnt = 0;
 	    for(int j = 0; j < GRAPH_ORDER; j++)
         {
 	        if (adjacency_matrix[i][j])
             {
 		        outdegree[i]++;
-                crs[i][cnt] = j;
-                cnt++;
 	        }
 	    }
 	    outdegree[i] = 1/outdegree[i];
     }
+    for(int j = 0; j < GRAPH_ORDER; j++)
+    {
+	    crs_cnt[j] = 0;
+        int cnt = 0;
+	    for(int i = 0; i < GRAPH_ORDER; i++)
+        {
+	        if (adjacency_matrix[i][j])
+            {
+		        crs_cnt[j]++;
+                crs[j][cnt++]=i;
+	        }
+	    }
+    }
     // map the data on the gpu
     // If running on a single node, we don't need to transfer any of the arrays back to main memory
-    #pragma omp target enter data map(to: pagerank[:GRAPH_ORDER], outdegree[:GRAPH_ORDER], crs[:GRAPH_ORDER*GRAPH_ORDER]) map(alloc: new_pagerank[:GRAPH_ORDER])
+    #pragma omp target enter data map(to: pagerank[:GRAPH_ORDER], outdegree[:GRAPH_ORDER], crs[:GRAPH_ORDER*GRAPH_ORDER], crs_cnt[:GRAPH_ORDER]) map(alloc: new_pagerank[:GRAPH_ORDER])
     // If we exceeded the MAX_TIME seconds, we stop. If we typically spend X seconds on an iteration, and we are less than X seconds away from MAX_TIME, we stop.
     while(elapsed < MAX_TIME && (elapsed + time_per_iteration) < MAX_TIME)
     {
@@ -108,19 +119,13 @@ void calculate_pagerank(double pagerank[])
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             double sum = 0.0;
-            int t = outdegree[i];
+            int t = crs_cnt[i];
+            int cnt = 0;
             #pragma omp parallel for simd reduction(+:sum)
-	        for(int j = 0; j < GRAPH_ORDER; j++)
+	        for(int j = 0; j < t; j++)
             {
-                //int idx = crs[i][j];
-		        if (adjacency_matrix[j][i])
-                {   
-                    //if (j != idx) {
-                    //    printf("Error i=%d, j=%d, idx=%d\n", i, j, idx);
-                    //}
-		            sum += pagerank[j] * outdegree[j];
-		        }
-                //sum += pagerank[idx] * outdegree[idx];
+                int idx = crs[i][j];
+                sum += pagerank[idx] * outdegree[idx];
 	        }
             new_pagerank[i] = sum;
 	    }
