@@ -63,8 +63,6 @@ void calculate_pagerank(double pagerank[])
     double elapsed = omp_get_wtime() - start;
     double time_per_iteration = 0;
     double new_pagerank[GRAPH_ORDER];
-    //double *new_pagerank;
-    //new_pagerank = (double *)malloc(GRAPH_ORDER * sizeof(double));
     for(int i = 0; i < GRAPH_ORDER; i++)
     {
         new_pagerank[i] = 0.0;
@@ -110,17 +108,12 @@ void calculate_pagerank(double pagerank[])
         min_diff = (min_diff > diff) ? diff : min_diff;
  
         double pagerank_total = 0.0;
-	//double* temp;
-	//temp = pagerank;
-	//pagerank = new_pagerank;
-	//new_pagerank = temp;
         for(int i = 0; i < GRAPH_ORDER; i++)
         {
             pagerank[i] = new_pagerank[i];
             pagerank_total += pagerank[i];
         }
-            
-        if(fabs(pagerank_total - 1.0) >= 1.0)
+        if(fabs(pagerank_total - 1.0) >= 1E-12)
         {
             printf("[ERROR] Iteration %zu: sum of all pageranks is not 1 but %.12f.\n", iteration, pagerank_total);
         }
